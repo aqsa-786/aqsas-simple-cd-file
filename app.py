@@ -15,5 +15,8 @@ def index():
     # Ab ye 'templates' folder mein index.html ko dhoonde ga
     return render_template('index.html', items=bakery_items)
 
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5015)
