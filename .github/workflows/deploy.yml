@@ -1,0 +1,43 @@
+name: Deploy Aqsa Web App to Azure VM
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: GitHub se code uthana
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Files ko VM par copy karna
+      - name: Copy files to Azure VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_IP_ADDRESS }}
+          username: azureuser
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "./*"
+          target: "/home/azureuser/aqsa-webapp"
+
+      # Step 3: VM ke andar ja kar app chalana
+      - name: Run app.py on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_IP_ADDRESS }}
+          username: azureuser
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            cd /home/azureuser/aqsa-webapp
+            
+            # Libraries install karna
+            pip3 install -r requirements.txt
+            
+            # Purani app ko band karke nayi chalana (nohup se)
+            pkill -f app.py || true
+            nohup python3 app.py > app.log 2>&1 &
+            
+            echo "Baking Store deployed successfully!"
